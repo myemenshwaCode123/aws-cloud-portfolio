@@ -6,6 +6,7 @@
   <title>Cloud Portfolio | Your Name</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+ 
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #0a0a0a;
@@ -16,9 +17,23 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      padding: 4rem 1.5rem 6rem;
     }
-    h1 { font-size: 3rem; margin-bottom: 1rem; color: #FF9900; }
-    p  { font-size: 1.2rem; max-width: 600px; color: #ccc; margin-bottom: 2rem; }
+ 
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #FF9900;
+    }
+ 
+    p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      color: #ccc;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+ 
     .badge {
       background: #232F3E;
       border: 1px solid #FF9900;
@@ -29,22 +44,124 @@
       margin: 0.3rem;
       display: inline-block;
     }
-    .stack { margin-top: 2rem; }
-    .footer { position: absolute; bottom: 1.5rem; color: #555; font-size: 0.8rem; }
+ 
+    .stack {
+      margin-top: 2rem;
+    }
+ 
+    /* ── Image section ── */
+    .photo-section {
+      margin-top: 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+ 
+    .photo-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #555;
+    }
+ 
+    .photo-frame {
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #1e1e1e;
+      outline: 1px solid #FF990022;
+      outline-offset: 4px;
+    }
+ 
+    .photo-frame img {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+ 
+    .photo-frame:hover img {
+      transform: scale(1.03);
+    }
+ 
+    .photo-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.2rem 1.5rem;
+      background: linear-gradient(to top, #0a0a0aee, transparent);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+ 
+    .photo-caption {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #f0f0f0;
+    }
+ 
+    .photo-caption span {
+      display: block;
+      font-size: 0.75rem;
+      color: #FF9900;
+      font-weight: 400;
+      margin-top: 0.2rem;
+    }
+ 
+    .photo-badge {
+      font-size: 0.7rem;
+      background: #FF990022;
+      border: 1px solid #FF990055;
+      color: #FF9900;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+    }
+ 
+    .footer {
+      position: fixed;
+      bottom: 1.5rem;
+      color: #555;
+      font-size: 0.8rem;
+    }
   </style>
 </head>
 <body>
+ 
   <h1>☁️ Cloud Portfolio</h1>
+ 
   <p>
     A production-grade, globally distributed website hosted on AWS —
     secured with HTTPS, delivered through CloudFront's CDN, and monitored with CloudWatch.
   </p>
+ 
   <div class="stack">
     <span class="badge">Amazon S3</span>
     <span class="badge">CloudFront</span>
     <span class="badge">ACM (HTTPS)</span>
     <span class="badge">CloudWatch</span>
   </div>
-  <div class="footer">Hosted on AWS Free Tier · &copy; 2025 Your Name</div>
+ 
+  <div class="photo-section">
+    <p class="photo-label">Served from S3 · Delivered via CloudFront</p>
+    <div class="photo-frame">
+      <img src="./rottweiler-puppies.jpg" alt="German Rottweiler puppies" />
+      <div class="photo-overlay">
+        <div class="photo-caption">
+          German Rottweiler Puppies
+          <span>Hosted on Amazon S3</span>
+        </div>
+        <div class="photo-badge">Static Asset</div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="footer">Hosted on AWS Free Tier · &copy; 2026 Michael Yemenshwa</div>
+ 
 </body>
 </html>
