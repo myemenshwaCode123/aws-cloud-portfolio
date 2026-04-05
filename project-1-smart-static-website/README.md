@@ -37,9 +37,9 @@ CloudWatch (Dashboards + Alarms) → SNS (Email Alerts)
 [View Site](https://d1s6iv7md0b1pw.cloudfront.net)
 
 ## Screenshots
-*(Add screenshots of your site, CloudWatch dashboard, and CloudFront distribution here)*
+<img width="1714" height="1386" alt="image" src="https://github.com/user-attachments/assets/cf3a48bf-2d79-43ff-9241-168d9a89be05" />
 
-<img width="1706" height="1338" alt="image" src="https://github.com/user-attachments/assets/e2370d13-ca69-45f5-82c3-5eb3d8a14680" />
+<img width="1712" height="671" alt="image" src="https://github.com/user-attachments/assets/e82b2639-d43b-42fc-bcd0-89d74c16bf47" />
 
 <img width="1633" height="1386" alt="image" src="https://github.com/user-attachments/assets/50df3135-2b1c-48d9-b1e4-65ad4e64a9aa" />
 
