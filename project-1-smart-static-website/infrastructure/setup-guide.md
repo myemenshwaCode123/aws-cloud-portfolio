@@ -1,8 +1,9 @@
 # Project 1: Smart Static Website — Setup Guide
  
-> **Stack:** S3 · CloudFront · ACM · CloudWatch  
+> **Stack:** S3 · CloudFront · CloudWatch  
 > **Cost:** 100% AWS Free Tier  
-> **Region:** `us-east-1` for all services
+> **Region:** `us-east-1` for all services  
+> **Domain:** Default `*.cloudfront.net` — no custom domain, no ACM required
  
 ---
  
@@ -35,18 +36,13 @@ Create the following two files in `project-1-smart-static-website/src/`:
  
 ---
  
-## Step 3 — Request an SSL/TLS certificate (ACM)
+## Step 3 — SSL/TLS certificate (ACM)
  
-> ⚠️ ACM certificates for CloudFront **must** be created in `us-east-1`, even if your bucket is in another region.
+> ✅ **Skipped — not needed for this setup.**
  
-1. Go to **AWS Console → Certificate Manager**
-2. Confirm you are in **us-east-1 (N. Virginia)**
-3. Click **Request a certificate → Request a public certificate**
-4. Enter your domain name (e.g. `myportfolio.com`)
-   - If you don't have a custom domain, skip this step — CloudFront provides a `*.cloudfront.net` HTTPS URL automatically
-5. Choose **DNS validation → Request**
-6. Add the provided CNAME record to your DNS registrar (Route 53, Namecheap, etc.)
-7. Wait ~5 minutes for status to show **Issued**
+This project uses the default CloudFront domain (`*.cloudfront.net`), which comes with HTTPS automatically included — no ACM certificate is required. CloudFront handles the SSL/TLS termination on its own.
+ 
+ACM is only needed if you attach a **custom domain** (e.g. `myportfolio.com`). If you do that in the future, the certificate must be requested in `us-east-1` regardless of where your S3 bucket lives.
  
 ---
  
@@ -62,8 +58,8 @@ Create the following two files in `project-1-smart-static-website/src/`:
 | Viewer protocol policy | **Redirect HTTP to HTTPS** |
 | Cache policy | `CachingOptimized` (AWS managed) |
 | Price class | Use only North America and Europe |
-| Alternate domain (CNAME) | Your custom domain, if applicable |
-| Custom SSL certificate | The ACM cert from Step 3 (or leave blank for `.cloudfront.net`) |
+| Alternate domain (CNAME) | Leave blank |
+| Custom SSL certificate | Leave blank — CloudFront uses default `*.cloudfront.net` HTTPS |
 | Default root object | `index.html` |
  
 3. Click **Create distribution**
@@ -127,7 +123,6 @@ After creation, AWS will prompt you to copy a bucket policy. Apply it:
 1. Copy your **CloudFront Distribution domain name** (e.g. `d1234abcd.cloudfront.net`)
 2. Open it in a browser — you should see your site over HTTPS ✅
 3. Append a non-existent path (e.g. `/fakeurl`) to verify the custom 404 page loads ✅
-4. If using a custom domain, update your DNS CNAME to point to the CloudFront domain
  
 ---
  
@@ -137,9 +132,9 @@ After creation, AWS will prompt you to copy a bucket policy. Apply it:
 Internet User (HTTPS)
         │
         ▼
-Amazon CloudFront  ◄── ACM (SSL/TLS Certificate)
- CDN · HTTPS · OAC       │
-        │                 └──► CloudWatch (Dashboards & Alarms)
+Amazon CloudFront ──────────────► CloudWatch (Dashboards & Alarms)
+CDN · HTTPS · OAC                 5xxErrorRate · SNS alerts
+*.cloudfront.net
         │ (OAC — private)
         ▼
     Amazon S3
@@ -147,5 +142,5 @@ Amazon CloudFront  ◄── ACM (SSL/TLS Certificate)
 ```
  
 - **S3** never exposes a public endpoint — CloudFront reads it via Origin Access Control
-- **ACM** provides the free HTTPS certificate attached to CloudFront
+- **CloudFront** provides HTTPS automatically on the default `*.cloudfront.net` domain — no ACM certificate needed
 - **CloudWatch** monitors error rates and sends SNS alerts when thresholds are crossed
