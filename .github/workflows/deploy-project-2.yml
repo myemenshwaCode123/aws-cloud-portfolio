@@ -1,0 +1,36 @@
+name: Deploy Silent Scalper (Project 2)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'project-2-silent-scalper/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::883386678128:role/github-actions-deploy-role
+          aws-region: us-east-1
+
+      - uses: aws-actions/setup-sam@v2
+
+      - name: Build
+        working-directory: project-2-silent-scalper/infrastructure
+        run: sam build
+
+      - name: Deploy
+        working-directory: project-2-silent-scalper/infrastructure
+        run: |
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
+            --stack-name silent-scalper \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides InitialsSuffix=YOUR_INITIALS AlertEmail=you@example.com
