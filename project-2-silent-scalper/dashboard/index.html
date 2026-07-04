@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Silent Scalper — Live Pipeline Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e6edf3; padding:2rem; }
+  h1 { color:#FF9900; margin-bottom:0.3rem; }
+  .subtitle { color:#8b949e; margin-bottom:2rem; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+  .card { background:#161b22; border:1px solid #30363d; border-radius:10px; padding:1.5rem; }
+  .stat { font-size:2.2rem; font-weight:bold; color:#58a6ff; }
+  .label { color:#8b949e; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; }
+  table { width:100%; border-collapse:collapse; margin-top:1rem; }
+  th, td { text-align:left; padding:0.6rem; border-bottom:1px solid #30363d; font-size:0.88rem; }
+  th { color:#8b949e; text-transform:uppercase; font-size:0.72rem; }
+  .status-success { color:#3fb950; } .status-failed { color:#f85149; }
+  #refreshBtn { background:#238636; color:#fff; border:none; padding:0.55rem 1.1rem; border-radius:6px; cursor:pointer; }
+  #refreshBtn:hover { background:#2ea043; }
+</style>
+</head>
+<body>
+  <h1>⚡ Silent Scalper</h1>
+  <p class="subtitle">Live serverless data pipeline — S3 → Lambda → DynamoDB</p>
+
+  <div class="grid">
+    <div class="card"><div class="label">Files Processed</div><div class="stat" id="totalFiles">—</div></div>
+    <div class="card"><div class="label">Success Rate</div><div class="stat" id="successRate">—</div></div>
+  </div>
+
+  <div class="card"><canvas id="filesChart" height="80"></canvas></div>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="label">Recent Files</div>
+      <button id="refreshBtn" onclick="loadData()">Refresh</button>
+    </div>
+    <table>
+      <thead><tr><th>File</th><th>Status</th><th>Processed At</th><th>Duration</th></tr></thead>
+      <tbody id="fileTable"></tbody>
+    </table>
+  </div>
+
+<script>
+  const API_URL = 'https://YOUR_API_URL/Prod/files'; // ← replace with your ApiUrl output
+  let chart;
+
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const files = data.files || [];
+
+      document.getElementById('totalFiles').textContent = data.count ?? files.length;
+      const successCount = files.filter(f => f.status === 'SUCCESS').length;
+      document.getElementById('successRate').textContent =
+        files.length ? Math.round((successCount / files.length) * 100) + '%' : '—';
+
+      document.getElementById('fileTable').innerHTML = files.slice(0, 10).map(f => `
+        <tr>
+          <td>${f.object_key ?? '—'}</td>
+          <td class="status-${(f.status || '').toLowerCase()}">${f.status ?? '—'}</td>
+          <td>${(f.processed_at ?? '').replace('T',' ').slice(0,19)}</td>
+          <td>${f.duration_ms ? f.duration_ms + 'ms' : '—'}</td>
+        </tr>`).join('');
+
+      renderChart(files);
+    } catch (err) {
+      document.getElementById('fileTable').innerHTML =
+        '<tr><td colspan="4">Could not reach API. Check the API_URL constant.</td></tr>';
+    }
+  }
+
+  function renderChart(files) {
+    const byDay = {};
+    files.forEach(f => {
+      const day = (f.processed_at || '').slice(0, 10);
+      byDay[day] = (byDay[day] || 0) + 1;
+    });
+    const labels = Object.keys(byDay).sort();
+    const values = labels.map(l => byDay[l]);
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById('filesChart'), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Files Processed', data: values, backgroundColor: '#58a6ff' }] },
+      options: { plugins: { legend: { display: false } },
+        scales: { x: { ticks:{color:'#8b949e'}, grid:{color:'#30363d'} },
+                  y: { ticks:{color:'#8b949e'}, grid:{color:'#30363d'}, beginAtZero:true } } }
+    });
+  }
+
+  loadData();
+  setInterval(loadData, 15000);
+</script>
+</body>
+</html>
