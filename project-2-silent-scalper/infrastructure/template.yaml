@@ -84,7 +84,7 @@ Resources:
           SNS_TOPIC_ARN: !Ref AlertTopic
       Policies:
         - S3ReadPolicy:
-            BucketName: !Ref InputBucket
+            BucketName: !Sub "silent-scalper-input-${InitialsSuffix}"
         - S3CrudPolicy:
             BucketName: !Ref QuarantineBucket
         - DynamoDBCrudPolicy:
