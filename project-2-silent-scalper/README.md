@@ -43,7 +43,6 @@ This diagram visualizes four primary system flows, incorporating the specific im
 cd project-2-silent-scalper/infrastructure
 sam build
 sam deploy --guided  # Use guided flag for initial environment configuration (Region, Suffix, Email, etc.)
-
 $content = @"
 alice,28,engineer
 bob,32,manager
@@ -51,5 +50,4 @@ bob,32,manager
 diana,29,analyst
 "@
 $content | Out-File -FilePath test_data.txt -Encoding ascii
-
 aws s3 cp test_data.txt s3://silent-scalper-input-my/
