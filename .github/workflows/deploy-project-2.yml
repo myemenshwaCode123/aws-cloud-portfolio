@@ -33,4 +33,4 @@ jobs:
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
             --stack-name silent-scalper \
             --capabilities CAPABILITY_IAM \
-            --parameter-overrides InitialsSuffix=YOUR_INITIALS AlertEmail=you@example.com
+            --parameter-overrides InitialsSuffix=my AlertEmail=michaelyemenshwa@gmail.com
