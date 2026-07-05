@@ -1,41 +1,45 @@
-# Project 2: Silent Scalper — Serverless Data Pipeline
+# Project 2: Silent Scalper — Serverless Data Processing Pipeline
 
-## Overview
-An event-driven serverless pipeline that processes files uploaded to S3, validates and
-transforms data, stores results in DynamoDB, quarantines bad files automatically, and
-exposes results through a live dashboard — fully defined as Infrastructure as Code.
+## Technical Overview
+An event-driven serverless architecture engineered to process, validate, and isolate data files automatically, complete with real-time alerting, observability, and a live metrics dashboard—fully defined and deployable as secure Infrastructure as Code (IaC).
 
-## Architecture
-![Architecture](./infrastructure/architecture-diagram.png)
+## Key Innovations & Success Stories
 
-## AWS Services
-| Service | Purpose |
-|---|---|
-| S3 | Entry point + quarantine storage |
-| Lambda | Serverless processing (with X-Ray tracing) |
-| DynamoDB | Processing results storage |
-| SNS | Real-time failure alerts |
-| API Gateway | REST endpoint for the dashboard |
-| CloudWatch | Custom metrics + alarms |
-| **AWS SAM** | Infrastructure as Code — full stack deploys in one command |
+This project represents significant milestones in mastering the AWS and IaC ecosystems. To achieve a successful, production-ready pipeline, I proactively identified and resolved critical architectural challenges:
 
-## Deploy It Yourself
-```bash
-cd infrastructure
-sam build
-sam deploy --guided
-```
+* **IaC Circular Dependency Resolution (The SAM Trigger):** I successfully diagnosed and resolved a notorious AWS SAM "circular dependency" during the initial deployment. By strategically modifying the `template.yaml` to reference the S3 bucket's name (`silent-scalper-input-my`) using a `!Sub` string for the Lambda `S3ReadPolicy` instead of the direct `!Ref` resource, I broke the creation loop, enabling CloudFormation to build the stack without freezing.
 
-## Live Demo
-- Dashboard: [link]
-- API endpoint: `GET {ApiUrl}/files`
+* **Keyless CI/CD Federation (OIDC):** I implemented a modern, secure, and keyless GitHub Actions deployment workflow using **OpenID Connect (OIDC)**. By federating GitHub and AWS, I eliminated the risk of storing static, long-lived AWS Access Keys within GitHub, ensuring a secure-by-default deployment process.
+
+* **Full Observability with X-Ray:** To ensure production-ready stability, I enabled **AWS X-Ray distributed tracing** on all Lambda functions. This provides immediate, visual tracing of requests as they travel from S3 through the processing Lambda to DynamoDB, SNS, or CloudWatch, simplifying future debugging and performance optimization.
+
+## Architecture & Flows
+
+![architecture-diagram](./infrastructure/architecture-diagram.png)
+
+This diagram visualizes four primary system flows, incorporating the specific implementation details that made this project successful.
+
+| Flow | Description | Key Services |
+| :--- | :--- | :--- |
+| **Ingestion** | User (or automation) uploads data to S3 Input Bucket | S3, Lambda, X-Ray |
+| **Processing** | Event-driven Lambda validates data, isolates malicious files to Quarantine Bucket, and stores valid records in DynamoDB | S3, Lambda, DynamoDB, X-Ray |
+| **Alerting** | Processing failures are tracked as custom CloudWatch metrics, triggering an alarm that dispatches a real-time email alert | CloudWatch, SNS, Email |
+| **Dashboard** | A public, serverless dashboard hosted on S3 fetches real-time processing metrics via API Gateway with CORS enabled and no authentication | S3 (Static), API Gateway, Lambda, DynamoDB, X-Ray |
 
 ## Engineering Decisions
-- **IAM**: Uses SAM's built-in least-privilege policy templates (`S3ReadPolicy`, `DynamoDBCrudPolicy`, etc.) instead of broad managed policies
-- **Observability**: X-Ray tracing enabled on all functions for distributed request tracing
-- **CI/CD**: GitHub Actions deploys automatically on push via keyless OIDC federation (no long-lived AWS credentials in CI)
 
-## Business Impact
-- Zero idle cost — Lambda only runs during actual processing
-- Bad data is automatically isolated, never corrupts the database
-- Full stack redeployable from scratch in under 5 minutes
+* **Infrastructure as Code (IaC):** Defined entirely with **AWS SAM**, ensuring a clean, reproducible, and easily manageble full-stack deployment (Day-18 ready for free-tier conclusions).
+* **Observability:** Integrated **AWS X-Ray** on functions for granular, end-to-end distributed tracing. Custom metrics and alarms provide proactive system health monitoring.
+* **IAM & Security:** Engineered using SAM's built-in, pre-scoped policy templates (`S3ReadPolicy`, `DynamoDBCrudPolicy`, `SNSPublishMessagePolicy`) to strictly enforce **least privilege access** for all functions.
+* **FinOps & Impact:** Zero idle cost structure—Lambda, S3, and DynamoDB (PAYG) are entirely reactive. Bad data is automatically isolated, preventing database corruption and ensuring data integrity.
+
+## Live Demo & Usage
+
+-   **Dashboard:** [http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com](http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com)
+-   **API Endpoint:** `GET {https://qthxywo9bi.execute-api.us-east-1.amazonaws.com/Prod/files}/files`
+
+### Self-Hosted Deployment
+```powershell
+cd project-2-silent-scalper/infrastructure
+sam build
+sam deploy --guided  # Use guided flag for initial environment configuration (Region, Suffix, Email, etc.)
