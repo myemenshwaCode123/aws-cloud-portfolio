@@ -38,8 +38,18 @@ This diagram visualizes four primary system flows, incorporating the specific im
 -   **Dashboard:** [http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com](http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com)
 -   **API Endpoint:** `GET {https://qthxywo9bi.execute-api.us-east-1.amazonaws.com/Prod/files}/files`
 
-### Self-Hosted Deployment
+### Self-Hosted Deployment & PowerShell cmds to test workflow with test_data text file
 ```powershell
 cd project-2-silent-scalper/infrastructure
 sam build
 sam deploy --guided  # Use guided flag for initial environment configuration (Region, Suffix, Email, etc.)
+
+$content = @"
+alice,28,engineer
+bob,32,manager
+<script>alert('xss')</script>
+diana,29,analyst
+"@
+$content | Out-File -FilePath test_data.txt -Encoding ascii
+
+aws s3 cp test_data.txt s3://silent-scalper-input-my/
