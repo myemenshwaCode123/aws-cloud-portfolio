@@ -1,59 +1,66 @@
-# Project 2: Silent Scalper — Serverless Data Processing Pipeline
+# Silent Scalper — Event-Driven Serverless Data Processing Pipeline
 
 ## Technical Overview
-An event-driven serverless architecture engineered to process, validate, and isolate data files automatically, complete with real-time alerting, observability, and a live metrics dashboard—fully defined and deployable as secure Infrastructure as Code (IaC).
+An enterprise-grade, event-driven serverless architecture engineered to ingest, programmatically validate, and isolate data streams automatically. The entire stack features real-time alerting telemetry, distributed tracing observability, and a live web metrics dashboard—fully provisioned and managed as secure **Infrastructure as Code (IaC)**.
 
-## Key Innovations & Success Stories
+---
 
-This project represents significant milestones in mastering the AWS and IaC ecosystems. To achieve a successful, production-ready pipeline, I proactively identified and resolved critical architectural challenges:
+## Architecture & System Flows
 
-* **IaC Circular Dependency Resolution (The SAM Trigger):** I successfully diagnosed and resolved a notorious AWS SAM "circular dependency" during the initial deployment. By strategically modifying the `template.yaml` to reference the S3 bucket's name (`silent-scalper-input-my`) using a `!Sub` string for the Lambda `S3ReadPolicy` instead of the direct `!Ref` resource, I broke the creation loop, enabling CloudFormation to build the stack without freezing.
+![System Architecture Diagram](infrastructureDiagramP2.png)
 
-* **Keyless CI/CD Federation (OIDC):** I implemented a modern, secure, and keyless GitHub Actions deployment workflow using **OpenID Connect (OIDC)**. By federating GitHub and AWS, I eliminated the risk of storing static, long-lived AWS Access Keys within GitHub, ensuring a secure-by-default deployment process.
+The system governs data across four distinct operational flows, enforcing isolation boundaries and execution observability at every stage:
 
-* **Full Observability with X-Ray:** To ensure production-ready stability, I enabled **AWS X-Ray distributed tracing** on all Lambda functions. This provides immediate, visual tracing of requests as they travel from S3 through the processing Lambda to DynamoDB, SNS, or CloudWatch, simplifying future debugging and performance optimization.
-
-## Architecture & Flows
-
-![architecture-diagram](infrastructureDiagramP2.png)
-
-This diagram visualizes four primary system flows, incorporating the specific implementation details that made this project successful.
-
-| Flow | Description | Key Services |
+| Core Flow | Architectural Mechanism | Key Integrated Services |
 | :--- | :--- | :--- |
-| **Ingestion** | User (or automation) uploads data to S3 Input Bucket | S3, Lambda, X-Ray |
-| **Processing** | Event-driven Lambda validates data, isolates malicious files to Quarantine Bucket, and stores valid records in DynamoDB | S3, Lambda, DynamoDB, X-Ray |
-| **Alerting** | Processing failures are tracked as custom CloudWatch metrics, triggering an alarm that dispatches a real-time email alert | CloudWatch, SNS, Email |
-| **Dashboard** | A public, serverless dashboard hosted on S3 fetches real-time processing metrics via API Gateway with CORS enabled and no authentication | S3 (Static), API Gateway, Lambda, DynamoDB, X-Ray |
+| **1. Data Ingestion** | Object landing triggers reactive computing resources instantly without long-running compute overhead. | AWS S3, AWS Lambda, AWS X-Ray |
+| **2. Threat Processing** | In-flight content validation separates valid payloads for structured persistence while isolating malicious injections. | AWS S3, AWS Lambda, Amazon DynamoDB |
+| **3. Real-Time Alerting** | Telemetry tracking monitors processing anomalies and breaches, dispatching asynchronous notifications immediately. | Amazon CloudWatch, Amazon SNS, Email |
+| **4. Edge Visualization** | Decoupled client browser fetches metrics from a serverless REST API backed by Cross-Origin Resource Sharing (CORS). | AWS S3 (Static), Amazon API Gateway, DynamoDB |
 
-## Engineering Decisions
+---
 
-* **Infrastructure as Code (IaC):** Defined entirely with **AWS SAM**, ensuring a clean, reproducible, and easily manageble full-stack deployment (Day-18 ready for free-tier conclusions).
-* **Observability:** Integrated **AWS X-Ray** on functions for granular, end-to-end distributed tracing. Custom metrics and alarms provide proactive system health monitoring.
-* **IAM & Security:** Engineered using SAM's built-in, pre-scoped policy templates (`S3ReadPolicy`, `DynamoDBCrudPolicy`, `SNSPublishMessagePolicy`) to strictly enforce **least privilege access** for all functions.
-* **FinOps & Impact:** Zero idle cost structure—Lambda, S3, and DynamoDB (PAYG) are entirely reactive. Bad data is automatically isolated, preventing database corruption and ensuring data integrity.
+## Core Engineering Achievements & Troubleshooting Successes
 
-## Live Demo & Usage
+This architecture serves as validation of production cloud engineering patterns, requiring deep-dive debugging across infrastructure orchestration and identity federation:
 
--   **Dashboard:** [http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com](http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com)
--   **API Endpoint:** `GET {https://qthxywo9bi.execute-api.us-east-1.amazonaws.com/Prod/files}/files`
+* **IaC Circular Dependency Resolution:** Diagnosed and resolved a classic CloudFormation race condition during initial stack assembly. The Lambda function's IAM template required explicit access to the S3 bucket via an `S3ReadPolicy`, while the S3 bucket simultaneously required structural awareness of the Lambda function to register object creation notifications. By refactoring the template to reference the bucket identifier using a string interpolation expression (`!Sub "silent-scalper-input-${InitialsSuffix}"`), the compile-time loop was broken, permitting smooth parallel provisioning.
+* **Keyless CI/CD Identity Federation (OIDC):** Eliminated the security risks of long-lived, static cloud access keys inside GitHub. Implemented secure token-based web identity federation via an **OpenID Connect (OIDC)** identity provider role. This establishes dynamic, short-lived security credentials tightly scoped exclusively to this specific repository's deployment actions.
+* **Granular Least-Privilege IAM Engineering:** Rejected broad wildcard (`*`) access controls. Built custom execution policies around highly specific micro-permissions (`S3ReadPolicy`, `DynamoDBCrudPolicy`, `SNSPublishMessagePolicy`), strictly confining component communication profiles to the minimum required operational scope.
+* **Distributed Tracing & Observability:** Outfitted the computing environment with **AWS X-Ray** daemon layers. This provides exhaustive, distributed transaction tracking across every hop of the execution pipeline, turning black-box serverless compute runs into clear, measurable data paths.
 
-## Dashboard with test_data file successfully processed 
+---
+
+## Production Implementations & Live Metrics
+
+### Pipeline Verification Evidence
+
+#### 1. Live Serverless Dashboard Tracking
+The static user interface automatically queries the backend REST endpoints to capture and display file states, real-time volume metrics, and pipeline health scores:
 ![Frontend-Dashboard](./workflowScreenshots/scalperDashboard.png)
 
-## SNS Alert Notification of Malicious Script in test_data txt file!
+#### 2. Automated SNS Alert Despatch
+When an active payload containing Cross-Site Scripting (`<script>`) elements is ingested, the engine quarantines the file and broadcasts an automated notification:
 ![SNS-Alert](./workflowScreenshots/SNSemail.png)
 
-### Self-Hosted Deployment & PowerShell cmds to test workflow with test_data text file
+### Live Infrastructure Deployments
+* **Interactive Web Interface:** [http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com](http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com)
+* **Production API Endpoint:** `GET https://qthxywo9bi.execute-api.us-east-1.amazonaws.com/Prod/files`
+
+---
+
+## Local Deployment & Verification Matrix
+
+Follow these operational steps to build, configure, and execute validation testing within your own cloud environment.
+
+### Step 1: Infrastructure Provisioning
+Initialize the compilation environment and invoke the cloud automation deployment wizard using the AWS Serverless Application Model (SAM):
 ```powershell
+# Navigate to the infrastructure context
 cd project-2-silent-scalper/infrastructure
+
+# Build and package local dependencies
 sam build
-sam deploy --guided  # Use guided flag for initial environment configuration (Region, Suffix, Email, etc.)
-$content = @"
-alice,28,engineer
-bob,32,manager
-<script>alert('xss')</script>
-diana,29,analyst
-"@
-$content | Out-File -FilePath test_data.txt -Encoding ascii
-aws s3 cp test_data.txt s3://silent-scalper-input-my/
+
+# Execute guided cloud architecture deployment
+sam deploy --guided
