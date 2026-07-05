@@ -64,3 +64,28 @@ sam build
 
 # Execute guided cloud architecture deployment
 sam deploy --guided
+```
+### Step 2: Inject Test Payloads & Verify Pipeline Response 
+Generate a structured text validation file containing an active security exception string, then copy it directly to your live intake bucket using the AWS CLI:
+```powershell
+# 1. Create a mock log asset containing an inline XSS attack vector
+$content = @"
+alice,28,engineer
+bob,32,manager
+<script>alert('xss')</script>
+diana,29,analyst
+"@
+
+# 2. Write the payload cleanly with accurate encoding to disk
+$content | Out-File -FilePath test_data.txt -Encoding ascii
+
+# 3. Stream the file directly up into the intake bucket to fire the architecture
+aws s3 cp test_data.txt s3://silent-scalper-input-my/
+```
+
+## Business & FinOps Realization
+Zero-Idle Cost Efficiency: Computes operate entirely on demand under a Pay-As-You-Go pricing model, drawing zero baseline maintenance or idle server expenses.
+
+Data Tier Guardrails: System logic keeps malicious inputs safely sequestered at the edge boundary, protecting data consumers from database contamination.
+
+Rapid Disaster Recovery: The complete stack is entirely modular and reproducible, letting you tear down and stand up a fresh, pristine staging cluster in under five minutes.
