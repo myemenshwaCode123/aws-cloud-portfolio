@@ -39,7 +39,7 @@ This architecture serves as validation of production cloud engineering patterns,
 The static user interface automatically queries the backend REST endpoints to capture and display file states, real-time volume metrics, and pipeline health scores:
 ![Frontend-Dashboard](./workflowScreenshots/scalperDashboard.png)
 
-#### 2. Automated SNS Alert Despatch
+#### 2. Automated SNS Alert
 When an active payload containing Cross-Site Scripting (`<script>`) elements is ingested, the engine quarantines the file and broadcasts an automated notification:
 ![SNS-Alert](./workflowScreenshots/SNSemail.png)
 
