@@ -37,7 +37,7 @@ This diagram visualizes four primary system flows, incorporating the specific im
 
 -   **Dashboard:** [http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com](http://silent-scalper-dashboard-my.s3-website-us-east-1.amazonaws.com)
 -   **API Endpoint:** `GET {https://qthxywo9bi.execute-api.us-east-1.amazonaws.com/Prod/files}/files`
--   ![Frontend-Dashboard](scalperDashboard.png)
+-   ![Frontend-Dashboard](./workflowScreenshots/scalperDashboard.png)
 -   ![SNS Alert Notification of Malicious Script in test_data txt file!](SNSemail.png)
 
 ### Self-Hosted Deployment & PowerShell cmds to test workflow with test_data text file
