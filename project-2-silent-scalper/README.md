@@ -15,7 +15,7 @@ This project represents significant milestones in mastering the AWS and IaC ecos
 
 ## Architecture & Flows
 
-![architecture-diagram](./infrastructureDiagramP2.png)
+![architecture-diagram](infrastructureDiagramP2.png)
 
 This diagram visualizes four primary system flows, incorporating the specific implementation details that made this project successful.
 
