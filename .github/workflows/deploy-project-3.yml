@@ -29,4 +29,5 @@ jobs:
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
             --stack-name smart-vault \
             --capabilities CAPABILITY_IAM \
+            --resolve-s3 \
             --parameter-overrides AlertEmail=michaelyemenshwa@gmail.com DRRegion=us-west-2 RetentionDays=7
