@@ -11,7 +11,7 @@ The architecture utilizes a completely decoupled, serverless coordination model.
 > 📍 **Architecture Diagram Placeholder**
 > *Replace the image link below with the path to your custom infrastructure diagram file once created.*
 
-![System Architecture Diagram](architecture-diagram.png)
+![System Architecture Diagram](Screenshots/Project3Diagram.png)
 
 ---
 
