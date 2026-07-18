@@ -9,7 +9,6 @@ An enterprise-grade, event-driven backup orchestration system that automates Ela
 The architecture utilizes a completely decoupled, serverless coordination model. Rather than relying on rigid cron scripts maintained inside virtual machines, AWS EventBridge coordinates cloud-native triggers to enforce zero-trust data protection policies dynamically.
 
 > 📍 **Architecture Diagram Placeholder**
-> *Replace the image link below with the path to your custom infrastructure diagram file once created.*
 
 ![System Architecture Diagram](Screenshots/Project3Diagram.png)
 
