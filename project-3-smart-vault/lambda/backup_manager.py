@@ -70,7 +70,7 @@ def create_snapshot(volume_id, instance_name, instance_id):
 
 
 def copy_snapshot_to_dr(snapshot_id, instance_name):
-    """NEW: Copy the snapshot to a second region for disaster recovery."""
+    """Copy the snapshot to a second region for disaster recovery."""
     try:
         response = ec2_dr.copy_snapshot(
             SourceRegion=SOURCE_REGION,
@@ -119,15 +119,28 @@ def lambda_handler(event, context):
     for instance in instances:
         for volume_id in instance['volumes']:
             try:
+                # 1. Trigger the primary snapshot creation
                 snapshot_id = create_snapshot(volume_id, instance['name'], instance['instance_id'])
+                
+                # 2. Waiter Block: Pause execution until the source snapshot is fully 'completed'
+                logger.info(f"Waiting for source snapshot {snapshot_id} to finish completing...")
+                snapshot_waiter = ec2.get_waiter('snapshot_completed')
+                snapshot_waiter.wait(
+                    SnapshotIds=[snapshot_id],
+                    WaiterConfig={'Delay': 15, 'MaxAttempts': 15}  # Checks every 15 seconds up to ~3.75 minutes
+                )
+                logger.info(f"Source snapshot {snapshot_id} is ready. Initiating cross-region copy to {DR_REGION}...")
+
+                # 3. Copy the completed snapshot to the DR region
                 dr_snapshot_id = copy_snapshot_to_dr(snapshot_id, instance['name'])
+                
                 results['snapshots_created'].append({
                     'snapshot_id': snapshot_id, 'volume_id': volume_id,
                     'instance': instance['name'], 'dr_snapshot_id': dr_snapshot_id
                 })
                 put_cloudwatch_metric('SnapshotsCreated', 1)
             except Exception as e:
-                logger.error(f"Snapshot failed for {volume_id}: {e}")
+                logger.error(f"Snapshot processing or DR copy failed for {volume_id}: {e}")
                 results['errors'].append(str(e))
                 put_cloudwatch_metric('SnapshotFailures', 1)
 
