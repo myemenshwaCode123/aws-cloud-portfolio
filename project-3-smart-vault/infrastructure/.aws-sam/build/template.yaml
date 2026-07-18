@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Smart Vault - Automated EBS Backup with Cross-Region DR (Project 3)
+Parameters:
+  AlertEmail:
+    Type: String
+  DRRegion:
+    Type: String
+    Default: us-west-2
+  RetentionDays:
+    Type: Number
+    Default: 7
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 300
+    MemorySize: 256
+    Tracing: Active
+Resources:
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: smart-vault-alerts
+      Subscription:
+      - Protocol: email
+        Endpoint:
+          Ref: AlertEmail
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+      - Ref: EC2InstanceRole
+  ProductionWebServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId:
+        Ref: LatestAmiId
+      IamInstanceProfile:
+        Ref: EC2InstanceProfile
+      Tags:
+      - Key: Name
+        Value: production-web-server
+      - Key: backup
+        Value: 'true'
+      - Key: Environment
+        Value: production
+  BackupManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: smart-vault-backup-manager
+      CodeUri: BackupManagerFunction
+      Handler: backup_manager.lambda_handler
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN:
+            Ref: AlertTopic
+          RETENTION_DAYS:
+            Ref: RetentionDays
+          DR_REGION:
+            Ref: DRRegion
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+          - ec2:CreateSnapshot
+          - ec2:CopySnapshot
+          - ec2:DeleteSnapshot
+          - ec2:DescribeSnapshots
+          - ec2:DescribeInstances
+          - ec2:CreateTags
+          Resource: '*'
+      - SNSPublishMessagePolicy:
+          TopicName:
+            Fn::GetAtt:
+            - AlertTopic
+            - TopicName
+      - CloudWatchPutMetricPolicy: {}
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 2 * * ? *)
+            Enabled: true
+    Metadata:
+      SamResourceId: BackupManagerFunction
+  SnapshotFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: SmartVault-Snapshot-Failure
+      Namespace: SmartVault
+      MetricName: SnapshotFailures
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+      - Ref: AlertTopic
+Outputs:
+  InstanceId:
+    Value:
+      Ref: ProductionWebServer
+  BackupFunctionName:
+    Value:
+      Ref: BackupManagerFunction

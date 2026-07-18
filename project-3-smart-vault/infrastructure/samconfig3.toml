@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "smart-vault"
+resolve_s3 = true
+s3_prefix = "smart-vault"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "AlertEmail=\"michaelyemenshwa@gmail.com\" DRRegion=\"us-west-2\" RetentionDays=\"7\" LatestAmiId=\"/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64\""
+image_repositories = []
+
+[default.global.parameters]
+region = "us-east-1"
