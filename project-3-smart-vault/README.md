@@ -1,9 +1,5 @@
 # Smart Vault: Tag-Driven Automated Backup & Cross-Region Disaster Recovery (IaC)
 
-![AWS](https://img.shields.io/badge/AWS-%23232F3E.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
-
 An enterprise-grade, event-driven backup orchestration system that automates Elastic Block Store (EBS) snapshots and manages a cross-region Disaster Recovery (DR) pipeline. The entire infrastructure—including compute, IAM security layers, networking, and automation schedules—is managed entirely as code via AWS SAM (CloudFormation).
 
 ---
