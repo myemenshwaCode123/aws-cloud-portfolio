@@ -1,0 +1,32 @@
+name: Deploy Smart Vault (Project 3)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'project-3-smart-vault/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::883386678128:role/github-actions-deploy-role
+          aws-region: us-east-1
+      - uses: aws-actions/setup-sam@v2
+      - name: Build
+        working-directory: project-3-smart-vault/infrastructure
+        run: sam build
+      - name: Deploy
+        working-directory: project-3-smart-vault/infrastructure
+        run: |
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
+            --stack-name smart-vault \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides AlertEmail=michaelyemenshwa@gmail.com DRRegion=us-west-2 RetentionDays=7
