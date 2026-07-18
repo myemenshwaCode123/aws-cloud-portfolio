@@ -69,7 +69,7 @@ Once verified by the Boto3 waiter block, storage blocks are automatically copied
 
 ### 4. Consolidated Operational Reporting
 An integrated notification pipeline broadcasts complete telemetry detailing instances evaluated, copies archived, and dynamic lifecycle pruning summaries directly to operators.
-![SNS Notification Verification](Screenshots/SNSReport(snapshot).png)
+![SNS Notification Verification](Screenshots/SNSreport(snapshot).png)
 
 ---
 
