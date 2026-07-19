@@ -1,0 +1,7 @@
+[
+  {"question": "How do I reset my password?", "answer": "Click 'Forgot Password' on the login page. You'll receive a reset email within a few minutes. Check spam if it doesn't arrive."},
+  {"question": "What are your pricing plans?", "answer": "We offer Starter ($9/mo), Pro ($29/mo), and Enterprise (custom pricing). Full details at techcorp.example.com/pricing."},
+  {"question": "How do I cancel my subscription?", "answer": "Go to Account Settings > Billing > Cancel Subscription. We also offer a 30-day pause option if you just need a break."},
+  {"question": "Do you offer a free trial?", "answer": "Yes! All plans include a 14-day free trial, no credit card required."},
+  {"question": "How do I export my data?", "answer": "Go to Settings > Data Export. You can export as CSV or JSON. Exports complete within about 5 minutes."}
+]
