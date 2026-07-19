@@ -15,7 +15,7 @@ cloudwatch = boto3.client('cloudwatch')
 CONVERSATIONS_TABLE = os.environ['CONVERSATIONS_TABLE']
 KB_TABLE             = os.environ['KNOWLEDGE_BASE_TABLE']
 SNS_TOPIC_ARN        = os.environ['SNS_TOPIC_ARN']
-CHAT_MODEL_ID        = 'anthropic.claude-3-haiku-20240307-v1:0'
+CHAT_MODEL_ID        = 'anthropic.claude-haiku-4-5-20251001-v1:0'
 EMBED_MODEL_ID       = 'amazon.titan-embed-text-v2:0'
 
 conv_table = dynamodb.Table(CONVERSATIONS_TABLE)
