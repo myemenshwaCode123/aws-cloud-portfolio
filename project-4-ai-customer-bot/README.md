@@ -6,7 +6,7 @@ grounded in a real knowledge base via Retrieval-Augmented Generation — not jus
 wrapper around an LLM API. Fully defined as Infrastructure as Code and deployed via CI/CD.
 
 ## Architecture
-![Architecture Diagram](./screenshots/architecture-diagram.png)
+![Architecture Diagram](./screenshots/architecture-diagramp4.png)
 
 Customer → API Gateway → Lambda → DynamoDB (conversation history)
 ↓
