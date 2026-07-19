@@ -8,20 +8,6 @@ wrapper around an LLM API. Fully defined as Infrastructure as Code and deployed 
 ## Architecture
 ![Architecture Diagram](./screenshots/architecture-diagramp4.png)
 
-Customer → API Gateway → Lambda → DynamoDB (conversation history)
-↓
-Titan Embeddings (embed question)
-↓
-Cosine similarity search vs. KnowledgeBase table
-↓
-[Knowledge Base Context] + question → Claude Haiku 4.5
-(via cross-region inference profile)
-↓
-Business rule validation → ESCALATE_TO_HUMAN?
-↓
-DynamoDB (save) + CloudWatch + SNS
-
-
 ## Live Proof
 
 **Infrastructure deployed via IaC** — entire stack, zero manual console clicks:
@@ -45,7 +31,6 @@ DynamoDB (save) + CloudWatch + SNS
 
 **Observability** — custom CloudWatch metrics and X-Ray distributed tracing:
 ![CloudWatch Metrics](./screenshots/11-cloudwatch-metrics.png)
-![X-Ray Trace Map](./screenshots/12-xray-trace-map.png)
 
 **CI/CD** — auto-deploys on push via keyless OIDC:
 ![GitHub Actions](./screenshots/13-github-actions-success.png)
