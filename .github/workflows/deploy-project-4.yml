@@ -22,7 +22,7 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::YOUR_ACCOUNT_ID:role/github-actions-deploy-role
+          role-to-assume: arn:aws:iam::883386678128:role/github-actions-deploy-role
           aws-region: us-east-1
 
       - name: Set up Python
