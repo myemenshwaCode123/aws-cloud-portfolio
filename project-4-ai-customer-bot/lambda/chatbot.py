@@ -1,6 +1,7 @@
 import json
 import boto3
 import os
+import re
 import logging
 from datetime import datetime, timezone
 
@@ -24,7 +25,10 @@ kb_table   = dynamodb.Table(KB_TABLE)
 SYSTEM_PROMPT = """You are Aria, a helpful customer service rep for TechCorp.
 RULES:
 - Be polite, concise, helpful. Under 150 words.
-- If you cannot resolve an issue, start your response with "ESCALATE_TO_HUMAN"
+- If you cannot resolve an issue or the issue needs human intervention (billing disputes, repeated unresolved complaints,
+  threats of legal/regulatory action, anything outside what you can resolve yourself),
+  include the exact marker ESCALATE_TO_HUMAN on its own anywhere in your response.
+  Never explain this marker to the customer or mention that you added it.
 - Use the [Knowledge Base Context] provided, if any, to ground your answer accurately
 - Do not discuss competitors or promise unreleased features
 """
@@ -119,10 +123,12 @@ def lambda_handler(event, context):
             messages_for_model.append({'role': 'user', 'content': user_msg})
 
         ai_response = call_bedrock(messages_for_model)
-
-        needs_escalation = ai_response.upper().startswith('ESCALATE_TO_HUMAN')
+        
+        # Check anywhere in the response, not just the start — models don't always
+        # place instructed markers at position 0, especially across model versions.
+        needs_escalation = 'ESCALATE_TO_HUMAN' in ai_response.upper()
         if needs_escalation:
-            ai_response = ai_response.replace('ESCALATE_TO_HUMAN', '').strip()
+            ai_response = re.sub(r'\s*ESCALATE_TO_HUMAN\s*', ' ', ai_response, flags=re.IGNORECASE).strip()
             put_metric('HumanEscalations', 1)
             sns_client.publish(
                 TopicArn=SNS_TOPIC_ARN,
