@@ -29,7 +29,7 @@ wrapper around an LLM API. Fully defined as Infrastructure as Code and deployed 
 **Knowledge base with real embeddings**:
 ![Knowledge Base Table](./screenshots/09-knowledge-base-table.png)
 
-**Observability** — custom CloudWatch metrics and X-Ray distributed tracing:
+**Observability** — custom CloudWatch metrics:
 ![CloudWatch Metrics](./screenshots/11-cloudwatch-metrics.png)
 
 **CI/CD** — auto-deploys on push via keyless OIDC:
