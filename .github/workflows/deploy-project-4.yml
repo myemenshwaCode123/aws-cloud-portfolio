@@ -1,0 +1,76 @@
+name: Deploy AI Customer Bot (Project 4)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'project-4-ai-customer-bot/**'
+      - '.github/workflows/deploy-project-4.yml'
+  workflow_dispatch:   # lets you trigger a manual redeploy from the Actions tab
+
+permissions:
+  id-token: write       # required for OIDC — no static AWS keys stored in GitHub
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::YOUR_ACCOUNT_ID:role/github-actions-deploy-role
+          aws-region: us-east-1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'   # matches the runtime actually deployed (see note below)
+
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: SAM build
+        working-directory: project-4-ai-customer-bot/infrastructure
+        run: sam build
+
+      - name: SAM deploy
+        working-directory: project-4-ai-customer-bot/infrastructure
+        run: |
+          sam deploy \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --stack-name ai-customer-bot \
+            --capabilities CAPABILITY_IAM \
+            --resolve-s3 \
+            --parameter-overrides AlertEmail=michaelyemenshwa@gmail.com
+
+      - name: Print API endpoint
+        run: |
+          aws cloudformation describe-stacks \
+            --stack-name ai-customer-bot \
+            --query "Stacks[0].Outputs[?OutputKey=='ChatApiUrl'].OutputValue" \
+            --output text
+
+# ─────────────────────────────────────────────────────────────────────────
+# NOTES
+# ─────────────────────────────────────────────────────────────────────────
+# 1. Runtime: your local build used Python 3.11 (not 3.12, since that's what
+#    was on PATH on your machine). The `template.yaml` Globals.Runtime value
+#    is what Lambda actually deploys with — make sure it says python3.11 to
+#    match what you've already tested, or install Python 3.12 locally and
+#    switch both to 3.12 for consistency. Either is fine; they just need to
+#    match each other.
+#
+# 2. Knowledge base indexing (build_knowledge_base.py) is NOT part of this
+#    workflow on purpose — it's a one-time data-load step, not a deploy step.
+#    Re-running it on every push would re-embed and re-write the same 5 FAQs
+#    repeatedly at trivial but pointless cost. If you add new FAQs, run it
+#    manually once from your machine after deploying.
+#
+# 3. role-to-assume and the AlertEmail parameter both need your real values
+#    filled in — same ones you used with `sam deploy --guided` locally.
+# ─────────────────────────────────────────────────────────────────────────
