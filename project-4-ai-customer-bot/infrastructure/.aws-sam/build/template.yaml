@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AI Customer Service Bot with RAG-lite Knowledge Base (Project 4)
+Parameters:
+  AlertEmail:
+    Type: String
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 30
+    MemorySize: 256
+    Tracing: Active
+Resources:
+  ConversationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ChatConversations
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: session_id
+        AttributeType: S
+      - AttributeName: timestamp
+        AttributeType: S
+      KeySchema:
+      - AttributeName: session_id
+        KeyType: HASH
+      - AttributeName: timestamp
+        KeyType: RANGE
+  KnowledgeBaseTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: KnowledgeBase
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: faq_id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: faq_id
+        KeyType: HASH
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ai-bot-alerts
+      Subscription:
+      - Protocol: email
+        Endpoint:
+          Ref: AlertEmail
+  ChatApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: '''POST,OPTIONS'''
+        AllowHeaders: '''Content-Type'''
+        AllowOrigin: '''*'''
+  ChatbotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ai-customer-bot
+      CodeUri: ChatbotFunction
+      Handler: chatbot.lambda_handler
+      Environment:
+        Variables:
+          CONVERSATIONS_TABLE:
+            Ref: ConversationsTable
+          KNOWLEDGE_BASE_TABLE:
+            Ref: KnowledgeBaseTable
+          SNS_TOPIC_ARN:
+            Ref: AlertTopic
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ConversationsTable
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: KnowledgeBaseTable
+      - SNSPublishMessagePolicy:
+          TopicName:
+            Fn::GetAtt:
+            - AlertTopic
+            - TopicName
+      - CloudWatchPutMetricPolicy: {}
+      - Statement:
+        - Effect: Allow
+          Action: bedrock:InvokeModel
+          Resource:
+          - Fn::Sub: arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0
+          - arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+          - arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+          - arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+          - Fn::Sub: arn:aws:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v2:0
+      Events:
+        ChatEndpoint:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ChatApi
+            Path: /chat
+            Method: POST
+    Metadata:
+      SamResourceId: ChatbotFunction
+Outputs:
+  ChatApiUrl:
+    Value:
+      Fn::Sub: https://${ChatApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/chat

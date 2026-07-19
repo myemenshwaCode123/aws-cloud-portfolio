@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "ai-customer-bot"
+resolve_s3 = true
+s3_prefix = "ai-customer-bot"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "AlertEmail=\"michaelyemenshwa@gmail.com\""
+image_repositories = []
+
+[default.global.parameters]
+region = "us-east-1"
